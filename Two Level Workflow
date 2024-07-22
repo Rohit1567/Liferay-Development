@@ -1,0 +1,414 @@
+<?xml version="1.0"?>
+
+<workflow-definition
+	xmlns="urn:liferay.com:liferay-workflow_7.4.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:liferay.com:liferay-workflow_7.4.0 http://www.liferay.com/dtd/liferay-workflow-definition_7_4_0.xsd"
+>
+	<name>a8cc653e-c728-9940-6849-2642908537a0</name>
+	<description>Multi approver can approve a workflow content.</description>
+	<version>23</version>
+	<condition>
+		<name>is_auto_approve</name>
+		<description>Execute conditional logic.</description>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						248.7535139275977,
+						-13.406923407890392
+					]
+				}
+			]]>
+		</metadata>
+		<labels>
+			<label language-id="en_US">
+				Is Auto Approve?
+			</label>
+		</labels>
+		<script>
+			<![CDATA[import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
+
+long userId = kaleoInstanceToken.getUserId();
+if (com.liferay.portal.kernel.service.RoleLocalServiceUtil.hasUserRole(userId, 20101)) {
+  returnValue = "auto_approve";
+} else {
+   returnValue = "first_approval";
+}]]>
+		</script>
+		<script-language>groovy</script-language>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Auto Approve
+					</label>
+				</labels>
+				<name>auto_approve</name>
+				<target>approved</target>
+				<default>false</default>
+			</transition>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						First Approval
+					</label>
+				</labels>
+				<name>first_approval</name>
+				<target>first_approver</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+	</condition>
+	<state>
+		<name>created</name>
+		<description>Begin a workflow.</description>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						-603.8885411700795,
+						307.10536551246076
+					]
+				}
+			]]>
+		</metadata>
+		<initial>true</initial>
+		<labels>
+			<label language-id="en_US">
+				Created
+			</label>
+		</labels>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Check Role
+					</label>
+				</labels>
+				<name>check_role</name>
+				<target>is_auto_approve</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+	</state>
+	<state>
+		<name>approved</name>
+		<description>Conclude the workflow.</description>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						1129.809814453125,
+						300.3658218383789
+					],
+					"terminal": true
+				}
+			]]>
+		</metadata>
+		<actions>
+			<action>
+				<name>approve</name>
+				<status>0</status>
+				<execution-type>onEntry</execution-type>
+			</action>
+		</actions>
+		<labels>
+			<label language-id="en_US">
+				Approved
+			</label>
+		</labels>
+	</state>
+	<task>
+		<name>first_update</name>
+		<description>Ask a user to work on the item.</description>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						258.00114495254286,
+						580.8742568438132
+					]
+				}
+			]]>
+		</metadata>
+		<actions>
+			<action>
+				<name>deny</name>
+				<description></description>
+				<status>4</status>
+				<priority>1</priority>
+				<execution-type>onAssignment</execution-type>
+			</action>
+			<action>
+				<name>pending</name>
+				<status>1</status>
+				<priority>2</priority>
+				<execution-type>onAssignment</execution-type>
+			</action>
+			<notification>
+				<name>Creator Modification Notification</name>
+				<description>
+					<![CDATA[]]>
+				</description>
+				<template>
+					<![CDATA[Your submission was rejected by ${userName}, please modify and resubmit.]]>
+				</template>
+				<template-language>freemarker</template-language>
+				<notification-type>email</notification-type>
+				<notification-type>user-notification</notification-type>
+				<recipients receptionType="to">
+					<user />
+				</recipients>
+				<execution-type>onAssignment</execution-type>
+			</notification>
+		</actions>
+		<assignments>
+			<user />
+		</assignments>
+		<labels>
+			<label language-id="en_US">
+				Update
+			</label>
+		</labels>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Resubmit
+					</label>
+				</labels>
+				<name>first_resubmit</name>
+				<target>first_approver</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+	</task>
+	<task>
+		<name>first_approver</name>
+		<description>Ask a user to work on the item.</description>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						254.473643262333,
+						314.5070406193306
+					]
+				}
+			]]>
+		</metadata>
+		<actions>
+			<notification>
+				<name>Review Notification</name>
+				<template>
+					<![CDATA[${userName} sent you a ${entryType} for review in the workflow.]]>
+				</template>
+				<template-language>freemarker</template-language>
+				<notification-type>email</notification-type>
+				<notification-type>user-notification</notification-type>
+				<recipients receptionType="to">
+					<assignees />
+				</recipients>
+				<execution-type>onAssignment</execution-type>
+			</notification>
+			<notification>
+				<name>Review Completion Notification</name>
+				<template>
+					<![CDATA[Your submission was reviewed<#if taskComments?has_content> and the reviewer applied the following ${taskComments}</#if>.]]>
+				</template>
+				<template-language>freemarker</template-language>
+				<notification-type>email</notification-type>
+				<recipients receptionType="to">
+					<user />
+				</recipients>
+				<execution-type>onExit</execution-type>
+			</notification>
+		</actions>
+		<assignments>
+			<roles>
+				<role>
+					<role-type>regular</role-type>
+					<name>First Level Blog Reviewer</name>
+					<auto-create>false</auto-create>
+				</role>
+			</roles>
+		</assignments>
+		<labels>
+			<label language-id="en_US">
+				First Approver
+			</label>
+		</labels>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Approve
+					</label>
+				</labels>
+				<name>second_approval</name>
+				<target>second_approver</target>
+				<default>true</default>
+			</transition>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Reject
+					</label>
+				</labels>
+				<name>first_reject</name>
+				<target>first_update</target>
+				<default>false</default>
+			</transition>
+		</transitions>
+	</task>
+	<task>
+		<name>second_approver</name>
+		<description>Ask a user to work on the item.</description>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						681.9684573793156,
+						299.31278989497525
+					]
+				}
+			]]>
+		</metadata>
+		<actions>
+			<notification>
+				<name>Review Notification</name>
+				<description>
+					<![CDATA[]]>
+				</description>
+				<template>
+					<![CDATA[${userName} sent you a ${entryType} for review in the workflow.]]>
+				</template>
+				<template-language>freemarker</template-language>
+				<notification-type>email</notification-type>
+				<notification-type>user-notification</notification-type>
+				<recipients receptionType="to">
+					<assignees />
+				</recipients>
+				<execution-type>onAssignment</execution-type>
+			</notification>
+			<notification>
+				<name>Review Completion Notification</name>
+				<description>
+					<![CDATA[]]>
+				</description>
+				<template>
+					<![CDATA[Your submission was reviewed<#if taskComments?has_content> and the reviewer applied the following ${taskComments}</#if>.]]>
+				</template>
+				<template-language>freemarker</template-language>
+				<notification-type>email</notification-type>
+				<notification-type>user-notification</notification-type>
+				<recipients receptionType="to">
+					<user />
+				</recipients>
+				<execution-type>onExit</execution-type>
+			</notification>
+		</actions>
+		<assignments>
+			<roles>
+				<role>
+					<role-type>regular</role-type>
+					<name>Second Level Blog Reviewer</name>
+					<auto-create>false</auto-create>
+				</role>
+			</roles>
+		</assignments>
+		<labels>
+			<label language-id="en_US">
+				Second Approver
+			</label>
+		</labels>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Approve
+					</label>
+				</labels>
+				<name>final_approval</name>
+				<target>approved</target>
+				<default>true</default>
+			</transition>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Reject
+					</label>
+				</labels>
+				<name>second_reject</name>
+				<target>second_update</target>
+				<default>false</default>
+			</transition>
+		</transitions>
+	</task>
+	<task>
+		<name>second_update</name>
+		<description>Ask a user to work on the item.</description>
+		<metadata>
+			<![CDATA[
+				{
+					"xy": [
+						683.4015962119199,
+						581.6476447217701
+					]
+				}
+			]]>
+		</metadata>
+		<actions>
+			<action>
+				<name>deny</name>
+				<description></description>
+				<status>4</status>
+				<priority>1</priority>
+				<execution-type>onAssignment</execution-type>
+			</action>
+			<action>
+				<name>pending</name>
+				<description></description>
+				<status>1</status>
+				<priority>1</priority>
+				<execution-type>onAssignment</execution-type>
+			</action>
+			<notification>
+				<name>Creator Modification Notification</name>
+				<description>
+					<![CDATA[]]>
+				</description>
+				<template>
+					<![CDATA[Your submission was rejected by ${userName}, please modify and resubmit.]]>
+				</template>
+				<template-language>freemarker</template-language>
+				<notification-type>email</notification-type>
+				<notification-type>user-notification</notification-type>
+				<recipients receptionType="to">
+					<user />
+				</recipients>
+				<execution-type>onAssignment</execution-type>
+			</notification>
+		</actions>
+		<assignments>
+			<user />
+		</assignments>
+		<labels>
+			<label language-id="en_US">
+				Update
+			</label>
+		</labels>
+		<transitions>
+			<transition>
+				<labels>
+					<label language-id="en_US">
+						Resubmit
+					</label>
+				</labels>
+				<name>second_resubmit</name>
+				<target>second_approver</target>
+				<default>true</default>
+			</transition>
+		</transitions>
+	</task>
+</workflow-definition>
