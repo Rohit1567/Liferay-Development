@@ -11,7 +11,7 @@ compileOnly group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '5.1.1'
 
 List<Employee> employeeList = this.employeeLocalService.getEmployees(-1, -1);
 	    try {
-	    	_log.info("Generate Excel Baby --- " + employeeList);
+	    	_log.info("Generate Excel --- " + employeeList);
 		      HSSFWorkbook workbook = new HSSFWorkbook();
 	          Sheet sheet = workbook.createSheet("Sheet1");
 	          Row headerRow = sheet.createRow(0);
