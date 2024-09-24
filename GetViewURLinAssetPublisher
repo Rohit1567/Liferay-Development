@@ -1,0 +1,17 @@
+<#assign AssetEntryLocalServiceUtil=serviceLocator.findService("com.liferay.asset.kernel.service.AssetEntryLocalService") />
+
+<#if entries?has_content>
+	<#list entries as curEntry>
+		<#assign assetEntry = AssetEntryLocalServiceUtil.fetchEntry(curEntry.getClassName(), curEntry.getClassPK()) />  
+                <#if curEntry.getClassName()== "com.liferay.journal.model.JournalArticle">
+									<#assign assetRenderer=curEntry.getAssetRenderer()
+										article=assetRenderer.getArticle()
+									  journalArticle=assetRenderer.getAssetObject()
+										resourceKey = journalArticle.getResourcePrimKey() 
+													 viewURL=assetPublisherHelper.getAssetViewURL(renderRequest, renderResponse, curEntry)
+ viewURL=assetRenderer.getURLViewInContext(renderRequest, renderResponse, viewURL)/>
+									</#if>
+		${viewURL}
+		<br>
+	</#list>
+</#if>
