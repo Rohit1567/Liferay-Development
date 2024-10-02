@@ -17,7 +17,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Danish
+ * @author Rohit Yadav
  */
 
 @Component(immediate = true, property = { "com.liferay.portlet.display-category=category.sample",
