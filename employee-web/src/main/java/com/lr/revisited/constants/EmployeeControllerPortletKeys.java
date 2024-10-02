@@ -1,7 +1,7 @@
 package com.lr.revisited.constants;
 
 /**
- * @author Danish
+ * @author Rohit Yadav
  */
 public class EmployeeControllerPortletKeys {
 
